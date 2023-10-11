@@ -167,10 +167,12 @@ func (fullStatus *PostgresqlStatus) printBasicInfo() {
 
 	cluster := fullStatus.Cluster
 
+	printSummary := PrintClusterSummary{}
+
 	if cluster.IsReplica() {
-		fmt.Println(aurora.Yellow("Replica Cluster Summary"))
+		printSummary.TargetSummary = aurora.Yellow("Replica Cluster Summary")
 	} else {
-		fmt.Println(aurora.Green("Cluster Summary"))
+		printSummary.TargetSummary = aurora.Green("Cluster Summary")
 	}
 
 	primaryInstance := cluster.Status.CurrentPrimary
@@ -186,36 +188,33 @@ func (fullStatus *PostgresqlStatus) printBasicInfo() {
 	isPrimaryFenced := cluster.IsInstanceFenced(cluster.Status.CurrentPrimary)
 	primaryInstanceStatus := fullStatus.tryGetPrimaryInstance()
 
-	summary.AddLine("Name:", cluster.Name)
-	summary.AddLine("Namespace:", cluster.Namespace)
+	printSummary.Name = cluster.Name
+	printSummary.Namespace = cluster.Namespace
 	if primaryInstanceStatus != nil {
-		summary.AddLine("System ID:", primaryInstanceStatus.SystemID)
+		printSummary.SystemID = strPointer(primaryInstanceStatus.SystemID)
 	}
-	summary.AddLine("PostgreSQL Image:", cluster.GetImageName())
+	printSummary.PostgreSQLImage = cluster.GetImageName()
 	if cluster.IsReplica() {
-		summary.AddLine("Designated primary:", primaryInstance)
-		summary.AddLine("Source cluster: ", cluster.Spec.ReplicaCluster.Source)
+		printSummary.DesignatedPrimary = strPointer(primaryInstance)
+		printSummary.SourceCluster = strPointer(cluster.Spec.ReplicaCluster.Source)
 	} else {
-		summary.AddLine("Primary instance:", primaryInstance)
+		printSummary.PrimaryInstance = strPointer(primaryInstance)
 		primaryInstanceTimestamp, err := time.Parse(
 			metav1.RFC3339Micro,
 			cluster.Status.CurrentPrimaryTimestamp,
 		)
 		if err == nil {
 			uptime := time.Since(primaryInstanceTimestamp)
-			summary.AddLine(
-				"Primary start time:",
-				fmt.Sprintf(
-					"%s (uptime %s)",
-					primaryInstanceTimestamp.Round(time.Second),
-					uptime.Round(time.Second),
-				),
-			)
+			printSummary.PrimaryStartTime = strPointer(fmt.Sprintf(
+				"%s (uptime %s)",
+				primaryInstanceTimestamp.Round(time.Second),
+				uptime.Round(time.Second),
+			))
 		} else {
-			summary.AddLine("Primary start time:", aurora.Red("error: "+err.Error()))
+			printSummary.PrimaryStartTimeError = aurora.Red("error: " + err.Error())
 		}
 	}
-	summary.AddLine("Status:", fullStatus.getStatus(isPrimaryFenced, cluster))
+	printSummary.Status = fullStatus.getStatus(isPrimaryFenced, cluster)
 	if cluster.Spec.Instances == cluster.Status.Instances {
 		summary.AddLine("Instances:", aurora.Green(cluster.Spec.Instances))
 	} else {
