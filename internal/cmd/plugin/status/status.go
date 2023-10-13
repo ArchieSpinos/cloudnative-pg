@@ -216,14 +216,14 @@ func (fullStatus *PostgresqlStatus) printBasicInfo() {
 	}
 	printSummary.Status = fullStatus.getStatus(isPrimaryFenced, cluster)
 	if cluster.Spec.Instances == cluster.Status.Instances {
-		summary.AddLine("Instances:", aurora.Green(cluster.Spec.Instances))
+		printSummary.LiveInstances = aurora.Green(cluster.Spec.Instances)
 	} else {
-		summary.AddLine("Instances:", aurora.Red(cluster.Spec.Instances))
+		printSummary.MissingInstances = aurora.Red(cluster.Spec.Instances - cluster.Status.Instances)
 	}
 	if cluster.Spec.Instances == cluster.Status.ReadyInstances {
-		summary.AddLine("Ready instances:", aurora.Green(cluster.Status.ReadyInstances))
+		printSummary.ReadyInstances = aurora.Green(cluster.Status.ReadyInstances)
 	} else {
-		summary.AddLine("Ready instances:", aurora.Red(cluster.Status.ReadyInstances))
+		printSummary.UnreadyInstances = aurora.Red(cluster.Spec.Instances - cluster.Status.ReadyInstances)
 	}
 
 	if fencedInstances != nil && fencedInstances.Len() > 0 {
