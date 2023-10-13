@@ -16,10 +16,10 @@ type PrintClusterSummary struct {
 	MissingInstances        interface{} `table:"Missing Instances"`
 	ReadyInstances          interface{} `table:"Ready Instances"`
 	UnreadyInstances        interface{} `table:"Unready Instances"`
-	PrimaryInstanceFenced   *string     `table:"First Name"`
-	FencedInstances         *string     `table:"First Name"`
-	PrimaryTransitionStatus *string     `table:"First Name"`
-	CurrentWriteLSN         *string     `table:"First Name"`
+	PrimaryInstanceFenced   interface{} `table:"Fenced instances including primary"`
+	FencedInstances         interface{} `table:"Fenced instances not including primary"`
+	PrimaryTransitionStatus interface{} `table:"Primary Transition Status"`
+	CurrentWriteLSN         *string     `table:"Current Write LSN"`
 }
 
 func strPointer(v string) *string { return &v }

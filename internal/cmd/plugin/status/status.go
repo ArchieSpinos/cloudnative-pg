@@ -228,17 +228,17 @@ func (fullStatus *PostgresqlStatus) printBasicInfo() {
 
 	if fencedInstances != nil && fencedInstances.Len() > 0 {
 		if isPrimaryFenced {
-			summary.AddLine("Fenced instances:", aurora.Red(listFencedInstances(fencedInstances)))
+			printSummary.PrimaryInstanceFenced = aurora.Red(listFencedInstances(fencedInstances))
 		} else {
-			summary.AddLine("Fenced instances:", aurora.Yellow(listFencedInstances(fencedInstances)))
+			printSummary.FencedInstances = aurora.Yellow(listFencedInstances(fencedInstances))
 		}
 	}
 
 	if cluster.Status.CurrentPrimary != cluster.Status.TargetPrimary {
 		if cluster.Status.CurrentPrimary == "" {
-			fmt.Println(aurora.Red("Primary server is initializing"))
+			printSummary.PrimaryTransitionStatus = aurora.Red("Primary server is initializing")
 		} else {
-			fmt.Println(aurora.Red("Switchover in progress"))
+			printSummary.PrimaryTransitionStatus = aurora.Red("Switchover in progress")
 		}
 	}
 	if !cluster.IsReplica() && primaryInstanceStatus != nil {
@@ -248,7 +248,7 @@ func (fullStatus *PostgresqlStatus) printBasicInfo() {
 			primaryInstanceStatus.TimeLineID,
 			primaryInstanceStatus.CurrentWAL,
 		)
-		summary.AddLine("Current Write LSN:", lsnInfo)
+		printSummary.CurrentWriteLSN = strPointer(lsnInfo)
 	}
 
 	summary.Print()
